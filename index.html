@@ -1,887 +1,533 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<!-- 文件类型声明：HTML5 标准，文档类型定义 -->
+<html lang="zh-Hant">
+<!-- HTML 根元素，语言设置为繁体中文（zh-Hant） -->
 <head>
+    <!-- 头部元素，包含元数据、资源引用、样式定义等，不直接显示在页面 -->
     <meta charset="UTF-8">
+    <!-- 字符集声明：使用 UTF-8，支持多语言字符 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>纺织产业控制塔 · 深色紫橙主题 · 完整控件版</title>
-    <!-- Font Awesome 6 图标库 -->
+    <!-- 视口设置：宽度等于设备宽度，初始缩放1.0，最大缩放1.5，允许用户缩放 -->
+    <title>紡織產業控制塔 · 全球訂單地圖 · 完整自適應版</title>
+    <!-- 页面标题，显示在浏览器标签页 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- 引入 Leaflet 地图库的 CSS 样式文件，用于地图显示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Font Awesome 6 图标库，用于显示各种图标 -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- 引入 Leaflet 地图库的 JavaScript 核心文件 -->
     <style>
-        /* ========== 全局CSS变量 ========== 
-           定义两套主题：浅色（默认）和深色（紫色主色 + 橙色成功）通过 .dark-mode 类覆盖 */
+        /* ===== CSS 全局变量与样式重置 ===== */
         :root {
-            /* ---------- 浅色主题（默认） ---------- */
-            --primary: #3a7bd5;
-            --primary-light: #e6f0ff;
-            --secondary: #00d2ff;
-            --success: #1dd1a1;
-            --warning: #feca57;
-            --danger: #ff6b6b;
-            --gray-bg: #f5f7fa;
-            --card-bg: #ffffff;
-            --border: #dee2e6;
-            --text-dark: #343a40;
-            --text-gray: #6c757d;
-            --sidebar-bg: #1a2634;
-            --sidebar-text: #e9ecef;
-            --radius: 8px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --transition: 0.2s ease;
-            --sidebar-width: 220px;
+            --primary: #3a7bd5;              /* 主色调蓝色，用于按钮、激活状态、头像背景等 */
+            --primary-light: #e6f0ff;         /* 浅蓝色，用于卡片背景、悬停等 */
+            --secondary: #00d2ff;             /* 辅助色亮蓝色，用于渐变 */
+            --success: #1dd1a1;               /* 成功色，表示已完成步骤 */
+            --warning: #feca57;               /* 警告色，用于状态标识 */
+            --danger: #ff6b6b;                /* 危险色，预留 */
+            --gray-bg: #f5f7fa;              /* 浅灰色背景，用于整体页面背景 */
+            --card-bg: #ffffff;               /* 卡片背景色，白色 */
+            --border: #dee2e6;                /* 边框颜色，浅灰 */
+            --text-dark: #343a40;             /* 主要文字颜色，深灰 */
+            --text-gray: #6c757d;             /* 辅助文字颜色，灰色 */
+            --sidebar-bg: #1a2634;            /* 侧边栏背景色，深灰蓝 */
+            --sidebar-text: #e9ecef;           /* 侧边栏文字颜色，接近白色 */
+            --radius: 8px;                    /* 全局圆角大小 */
+            --shadow: 0 4px 12px rgba(0,0,0,0.08); /* 默认卡片阴影，透明黑 */
+            --transition: 0.2s ease;           /* 动画过渡时间及缓动函数 */
+            --sidebar-width: 220px;            /* 侧边栏固定宽度 */
         }
-
-        /* ---------- 深色主题（紫色主色 + 橙色成功）---------- 
-           通过给 html 标签添加 .dark-mode 类来激活 */
         .dark-mode {
-            --primary: #a78bfa;          /* 柔和紫色主色 */
-            --primary-light: #382e5c;     /* 深紫背景，用于高亮区域 */
-            --secondary: #d8b4fe;         /* 淡紫色辅助 */
-            --success: #f39c12;           /* 橙色 - 替换原本的绿色 */
-            --warning: #f39c12;           /* 警告色也使用橙色（保持一致） */
-            --danger: #e74c3c;            /* 保持红色不变 */
-            --gray-bg: #121212;           /* 深灰整体背景 */
-            --card-bg: #1e1e1e;           /* 深色卡片 */
-            --border: #333333;            /* 深色边框 */
-            --text-dark: #e0e0e0;         /* 浅色主文字 */
-            --text-gray: #a0a0a0;         /* 浅灰辅助文字 */
-            --sidebar-bg: #0a0e14;        /* 边栏更深 */
-            --sidebar-text: #f0f0f0;       /* 边栏文字更亮 */
-            --shadow: 0 4px 12px rgba(0,0,0,0.3); /* 更深阴影 */
+            /* 深色模式变量覆盖，颜色整体变暗、饱和 */
+            --primary: #a78bfa;               /* 紫色调主色 */
+            --primary-light: #382e5c;          /* 深紫色背景 */
+            --secondary: #d8b4fe;             /* 淡紫辅助色 */
+            --success: #f39c12;               /* 橘色表示成功 */
+            --warning: #f39c12;               /* 橘色警告 */
+            --danger: #e74c3c;                /* 红色危险 */
+            --gray-bg: #121212;               /* 深灰背景 */
+            --card-bg: #1e1e1e;               /* 深色卡片 */
+            --border: #333333;                /* 深色边框 */
+            --text-dark: #e0e0e0;             /* 亮色文字 */
+            --text-gray: #a0a0a0;             /* 中灰色文字 */
+            --sidebar-bg: #0a0e14;            /* 更深的侧边栏 */
+            --sidebar-text: #f0f0f0;           /* 亮白文字 */
+            --shadow: 0 4px 12px rgba(0,0,0,0.3); /* 更重阴影 */
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* 全局通配符重置：所有元素外边距、内边距清零，盒模型设为 border-box（包含边框和内边距在宽度内） */
         body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background: var(--gray-bg);
-            color: var(--text-dark);
-            line-height: 1.5;
-            min-height: 100vh;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang TC', sans-serif;
+            /* 字体优先使用 Segoe UI，微软雅黑，苹方，后备无衬线字体 */
+            background: var(--gray-bg);         /* 背景色使用浅灰变量（深色模式自动切换） */
+            color: var(--text-dark);            /* 文字颜色使用深色变量（深色模式自动切换） */
+            line-height: 1.5;                  /* 行高1.5倍，便于阅读 */
+            min-height: 100vh;                 /* 最小高度为视口高度，确保背景铺满 */
+            transition: background 0.3s, color 0.3s; /* 背景色与文字颜色过渡动画，深色切换平滑 */
         }
 
-        .app {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
+        .app { display: flex; min-height: 100vh; width: 100%; }
+        /* 应用主容器：flex 布局，最小高度100视口，宽度100%，侧边栏与主内容并排 */
 
-        /* ========== 左侧边栏 ========== */
+        /* ========== 左側邊欄 ========== */
         .sidebar {
-            width: var(--sidebar-width);
-            background: var(--sidebar-bg);
-            color: var(--sidebar-text);
-            display: flex;
-            flex-direction: column;
-            padding: 24px 0;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-            transition: width 0.3s ease, background-color 0.3s ease;
-            flex-shrink: 0;
+            width: var(--sidebar-width);       /* 宽度使用变量，220px */
+            background: var(--sidebar-bg);      /* 侧边栏深色背景 */
+            color: var(--sidebar-text);         /* 侧边栏文字颜色 */
+            display: flex; flex-direction: column; /* 纵向 flex 排列 */
+            padding: 24px 0;                  /* 上下内边距24px，左右0 */
+            position: sticky; top: 0;          /* 粘性定位，向下滚动时固定顶部 */
+            height: 100vh;                    /* 高度为整个视口高度 */
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2); /* 右侧阴影增加立体感 */
+            transition: width 0.3s, background 0.3s; /* 宽度与背景色过渡（响应式） */
+            flex-shrink: 0;                   /* 不压缩宽度 */
         }
 
         .sidebar-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 12px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 16px;
+            display: flex; flex-direction: column; align-items: center;
+            /* 头部区域：垂直排列，居中对齐 */
+            padding: 0 12px 20px;            /* 内边距：左右12px，下20px，上0 */
+            border-bottom: 1px solid rgba(255,255,255,0.1); /* 半透白底边分隔 */
+            margin-bottom: 16px;              /* 下外边距16px */
         }
 
         .avatar {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, var(--primary), var(--secondary));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            border: 3px solid rgba(255,255,255,0.2);
-            transition: background 0.3s ease;
+            width: 70px; height: 70px; border-radius: 50%;
+            /* 圆形头像，宽高70px，完全圆形 */
+            background: var(--primary);       /* 背景色为主色（蓝/紫） */
+            color: white;                    /* 文字白色 */
+            display: flex; align-items: center; justify-content: center;
+            /* flex 居中内部文字 */
+            font-size: 1.8rem; font-weight: 600;
+            /* 字体大小1.8rem，粗体 */
+            margin-bottom: 12px;             /* 下外边距12px */
+            border: 2px solid rgba(255,255,255,0.25); /* 半透白边框，增加光泽 */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25);   /* 阴影，立体 */
+            transition: all 0.3s;            /* 过渡动画 */
         }
 
         .user-info-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
+            display: flex; flex-direction: column; align-items: center; width: 100%;
+            /* 用户信息容器：垂直居中，宽度100% */
         }
-
         .user-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 4px;
-            text-align: center;
-            width: 100%;
+            font-size: 1.1rem; font-weight: 600; color: white;
+            /* 姓名：大小1.1rem，粗体，白色 */
+            margin-bottom: 4px; text-align: center; width: 100%;
+            /* 下边距4px，文字居中，宽度100% */
         }
-
         .user-title {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-            width: 100%;
+            font-size: 0.75rem; color: rgba(255,255,255,0.7);
+            /* 职务：小号字体，半透白 */
+            text-align: center; width: 100%;
+            /* 居中，宽度100% */
         }
 
-        .nav {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 0 12px;
-        }
+        .nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
+        /* 导航菜单：垂直排列，间隙4px，左右内边距12px */
 
-        .nav-card {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: var(--radius);
-            color: rgba(255,255,255,0.8);
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all var(--transition);
-            cursor: pointer;
-            border-left: 4px solid transparent;
-            text-align: center;
-        }
-
-        .nav-card i {
-            width: 20px;
-            text-align: center;
-            font-size: 1rem;
-        }
-
-        .nav-card:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border-left-color: var(--secondary);
-        }
-
-        .nav-card.active {
-            background: var(--primary);
-            color: white;
-            border-left-color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        /* ---------- 深色模式切换按钮（边栏底部） ---------- */
-        .theme-toggle-container {
-            margin-top: auto;
-            padding: 16px 12px 8px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
+        .nav-card,
         .theme-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: var(--radius);
-            color: rgba(255,255,255,0.8);
-            font-weight: 500;
-            font-size: 0.95rem;
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            /* flex 水平垂直居中，图标与文字间隙10px */
+            padding: 10px 12px;              /* 内边距 */
+            background: rgba(255,255,255,0.05); /* 半透白背景，深色底上可见 */
+            border-radius: var(--radius);    /* 圆角8px */
+            color: rgba(255,255,255,0.8);     /* 文字颜色半透白 */
+            font-weight: 500; font-size: 0.95rem;
             transition: all var(--transition);
-            border-left: 4px solid transparent;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border-left-color: var(--secondary);
-        }
-
-        .theme-toggle i {
-            width: 20px;
+            cursor: pointer;                 /* 鼠标指针为手型 */
+            border-left: 4px solid transparent; /* 左边框透明，用于悬停激活指示 */
             text-align: center;
-            font-size: 1rem;
+        }
+        .nav-card i,
+        .theme-toggle i { width: 20px; text-align: center; font-size: 1rem; }
+        /* 图标固定宽度20px，居中，字体大小1rem */
+        .nav-card:hover,
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.1); /* 悬停加深背景 */
+            color: white;                     /* 文字纯白 */
+            border-left-color: var(--secondary); /* 左边框显示辅助色 */
+        }
+        .nav-card.active,
+        .theme-toggle.active {
+            background: var(--primary);       /* 激活时使用主色背景 */
+            color: white;                    /* 文字白色 */
+            border-left-color: white;        /* 左边框白色 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* 阴影增强 */
         }
 
-        /* ========== 右侧主内容区 ========== */
+        .theme-toggle-container {
+            margin-top: auto;                /* 自动上边距，推到底部 */
+            padding: 16px 12px 8px;          /* 内边距 */
+            border-top: 1px solid rgba(255,255,255,0.1); /* 上边框分隔线 */
+        }
+
+        /* ========== 右側主內容區 ========== */
         .main {
-            flex: 1;
-            padding: 24px 32px;
-            max-width: calc(100% - var(--sidebar-width));
-            overflow-x: hidden;
-            transition: max-width 0.3s ease, padding 0.3s ease, background-color 0.3s ease;
+            flex: 1;                         /* 弹性占据剩余宽度 */
+            padding: 24px 32px;              /* 内边距 */
+            max-width: calc(100% - var(--sidebar-width)); /* 最大宽度 = 全宽 - 侧边栏宽 */
+            overflow-x: hidden;              /* 水平溢出隐藏 */
+            transition: max-width 0.3s, padding 0.3s, background 0.3s;
         }
+        .container { max-width: 1200px; margin: 0 auto; width: 100%; }
+        /* 内容容器：最大宽1200px，水平居中，宽度100% */
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* ========== 主页样式 ========== */
+        /* ========== 主頁樣式 ========== */
         .welcome-card {
             background: linear-gradient(145deg, var(--primary), var(--secondary));
-            border-radius: var(--radius);
-            padding: 32px;
-            color: white;
-            margin-bottom: 24px;
+            /* 渐变背景：主色到辅助色 */
+            border-radius: var(--radius); padding: 32px; color: white;
+            margin-bottom: 20px;              /* 下边距20px（比之前24px更紧凑） */
             box-shadow: var(--shadow);
-            transition: background 0.3s ease;
+            transition: background 0.3s;
         }
+        .welcome-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+        .welcome-text { font-size: 1rem; opacity: 0.9; }
 
-        .welcome-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .welcome-text {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
+        /* 五列網格 */
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 24px;
+            /* 网格布局：5列等宽，间隙20px，下边距24px（紧凑） */
         }
-
         .stat-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.3s ease;
-        }
-
-        .stat-info h4 {
-            font-size: 0.9rem;
-            color: var(--text-gray);
-            margin-bottom: 6px;
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .stat-icon {
-            font-size: 2.2rem;
-            color: var(--primary-light);
-        }
-
-        .recent-section {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--text-dark);
-        }
-
-        .activity-list {
-            list-style: none;
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .activity-item:last-child { border-bottom: none; }
-
-        .activity-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--success);
-            margin-right: 12px;
-        }
-
-        .activity-dot.warning { background: var(--warning); }
-        .activity-dot.danger { background: var(--danger); }
-
-        .activity-content { flex: 1; }
-
-        .activity-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .activity-time {
-            font-size: 0.8rem;
-            color: var(--text-gray);
-        }
-
-        /* ========== 订单管理页面样式 ========== */
-        .filter-bar {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .filter-label {
-            font-size: 0.85rem;
-            color: var(--text-gray);
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .filter-select {
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: var(--card-bg);
-            color: var(--text-dark);
-            outline: none;
-            font-size: 0.85rem;
-            min-width: 120px;
-            transition: background 0.3s ease, border 0.3s ease, color 0.3s ease;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
+            background: var(--card-bg); border-radius: var(--radius); padding: 20px;
+            box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between;
+            /* 弹性布局，水平对齐两端，垂直居中 */
+            transition: background 0.3s, transform 0.2s;
             cursor: pointer;
-            transition: background 0.2s;
-            white-space: nowrap;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);      /* 悬停轻微上移 */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .stat-info h4 { font-size: 0.9rem; color: var(--text-gray); margin-bottom: 6px; }
+        .stat-number { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+        .stat-icon { font-size: 2.2rem; color: var(--primary-light); }
+
+        /* ----- 地圖 + 公告欄 雙列佈局（地圖佔2/3，公告欄1/3，地圖高度縮為3/4）----- */
+        .dashboard-row {
+            display: flex; gap: 20px; margin-top: 16px;
+            /* 弹性行，间隙20px，上边距16px（比之前20px更紧凑） */
+        }
+        .map-card {
+            flex: 2;                         /* 占2份，约为66.7% */
+            background: var(--card-bg); border-radius: var(--radius); padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex; flex-direction: column;
+        }
+        .map-title {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; color: var(--text-dark);
+        }
+        .map-container {
+            width: 100%;
+            aspect-ratio: 64 / 27;           /* 宽高比64:27，相对于16:9高度为3/4，使地图更扁，充满容器 */
+            border-radius: var(--radius);
+            overflow: hidden;                /* 隐藏溢出部分（圆角裁剪） */
+            border: 1px solid var(--border);
+        }
+        .bulletin-card {
+            flex: 1;                         /* 占1份，约33.3% */
+            background: var(--card-bg); border-radius: var(--radius); padding: 20px;
+            box-shadow: var(--shadow); display: flex; flex-direction: column;
+        }
+        .bulletin-title {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; color: var(--text-dark);
+        }
+        .bulletin-list {
+            list-style: none; flex: 1;
+        }
+        .bulletin-item {
+            padding: 12px 0; border-bottom: 1px solid var(--border);
+        }
+        .bulletin-item:last-child { border-bottom: none; }
+        .bulletin-item strong { color: var(--primary); }
+        .bulletin-time {
+            font-size: 0.75rem; color: var(--text-gray); margin-top: 4px;
         }
 
-        .filter-btn:hover { background: #2c5fa5; }
-        .dark-mode .filter-btn:hover { background: #8b5cf6; }
-
-        .filter-btn.reset {
-            background: var(--gray-bg);
-            color: var(--text-dark);
+        /* ========== 訂單管理頁面樣式（完整保留，並加入滾動優化）========= */
+        .filter-bar {
+            background: var(--card-bg); border-radius: var(--radius); padding: 16px;
+            margin-bottom: 24px; box-shadow: var(--shadow);
+            display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
         }
-
-        .filter-btn.reset:hover { background: var(--border); }
+        .filter-group {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .filter-label {
+            font-size: 0.85rem; color: var(--text-gray); font-weight: 600; white-space: nowrap;
+        }
+        .filter-select {
+            padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px;
+            background: var(--card-bg); color: var(--text-dark); outline: none;
+            font-size: 0.85rem; min-width: 120px;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .btn {
+            padding: 8px 16px; border: none; border-radius: 4px;
+            font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #2c5fa5; }
+        .dark-mode .btn-primary:hover { background: #8b5cf6; }
+        .btn-reset { background: var(--gray-bg); color: var(--text-dark); }
+        .btn-reset:hover { background: var(--border); }
 
         .order-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 30px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px;
+            /* 订单卡片区域：两列等宽，间隙24px */
         }
-
         .order-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: all 0.3s;
-            max-height: 70px;
-            cursor: pointer;
+            background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+            overflow: hidden; transition: all 0.3s; max-height: 70px; cursor: pointer;
+            /* 默认收起，高度70px只显示头部 */
         }
-
-        .order-card.expanded { max-height: 600px; }
-
+        .order-card.expanded { max-height: 1200px; } /* 展开时高度限制足够大，展示全部内容 */
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
+            display: flex; justify-content: space-between; align-items: center; padding: 16px;
             background: linear-gradient(90deg, var(--primary-light), var(--card-bg));
-            border-bottom: 1px solid var(--border);
-            transition: background 0.3s ease;
+            border-bottom: 1px solid var(--border); transition: background 0.3s;
         }
-
         .card-header.active {
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: white;
         }
-
         .card-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            flex-wrap: wrap;
+            display: flex; align-items: center; gap: 12px;
+            font-size: 1.1rem; font-weight: 600; flex-wrap: wrap;
         }
-
         .order-count {
-            background: var(--gray-bg);
-            color: var(--text-dark);
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            background: var(--gray-bg); color: var(--text-dark);
+            padding: 2px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
         }
-
-        .active .order-count {
-            background: rgba(255,255,255,0.2);
-            color: white;
-        }
-
+        .active .order-count { background: rgba(255,255,255,0.2); color: white; }
         .card-icon { transition: transform 0.3s; }
         .expanded .card-icon { transform: rotate(180deg); }
-
+        
         .card-content {
-            padding: 0;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: all 0.3s;
+            padding: 0; 
+            max-height: 0; 
+            opacity: 0; 
+            overflow: visible;
+            transition: all 0.4s ease;
         }
-
         .expanded .card-content {
-            padding: 16px;
-            max-height: 500px;
-            opacity: 1;
+            padding: 16px; 
+            max-height: 2000px;
+            opacity: 1; 
         }
 
         .order-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            max-height: 440px;               /* 最大高度约5.5个订单项，超出滚动 */
+            overflow-y: auto;               /* 垂直滚动条 */
+            padding-right: 4px;             /* 留出滚动条空间 */
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .order-list::-webkit-scrollbar {
+            width: 6px;                     /* 滚动条宽度 */
+        }
+        .order-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 6px;
+        }
+        .order-list::-webkit-scrollbar-track {
+            background: transparent;
         }
 
         .order-item {
-            background: var(--gray-bg);
-            border-radius: 6px;
-            padding: 12px;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-            cursor: pointer;
+            background: var(--gray-bg); border-radius: 6px; padding: 12px;
+            border: 2px solid transparent; transition: all 0.2s; cursor: pointer;
         }
-
         .order-item:hover {
-            border-color: var(--primary-light);
-            transform: translateY(-2px);
+            border-color: var(--primary-light); transform: translateY(-2px);
         }
-
         .order-item.selected {
-            background: var(--primary-light);
-            border-color: var(--primary);
+            background: var(--primary-light); border-color: var(--primary);
         }
-
         .order-row1 {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-            flex-wrap: wrap;
-            gap: 6px;
+            display: flex; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;
         }
-
         .order-id { font-weight: 700; }
-
-        .order-gs1 {
-            font-size: 0.8rem;
-            color: var(--text-gray);
-            background: rgba(0,0,0,0.05);
-            padding: 2px 8px;
-            border-radius: 12px;
+        .gs1-tag {
+            font-size: 0.8rem; color: var(--text-gray);
+            background: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;
         }
-
-        .dark-mode .order-gs1 {
-            background: rgba(255,255,255,0.1);
-        }
-
+        .dark-mode .gs1-tag { background: rgba(255,255,255,0.1); }
         .order-row2 {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            flex-wrap: wrap;
-            gap: 6px;
+            display: flex; justify-content: space-between; font-size: 0.85rem; flex-wrap: wrap; gap: 6px;
         }
-
         .order-amount { font-weight: 600; color: var(--primary); }
         .order-date { color: var(--text-gray); }
-
-        .order-status {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .status-badge {
+            padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;
         }
-
         .status-active { background: #e1f7ed; color: #1dd1a1; }
         .status-completed { background: #e9ecef; color: #6c757d; }
-
-        /* 深色模式状态徽章 —— 橙色主题 */
-        .dark-mode .status-active {
-            background: #3a2a1a; /* 深橙色背景 */
-            color: #f39c12;      /* 橙色文字 */
-        }
+        .dark-mode .status-active { background: #3a2a1a; color: #f39c12; }
         .dark-mode .status-completed { background: #2a2a2a; color: #a0a0a0; }
 
         .detail-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 20px;
-            margin-top: 20px;
-            overflow-x: auto;
+            background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+            padding: 20px; margin-top: 20px; overflow-x: auto;
         }
-
         .detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            background: var(--gray-bg);
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            gap: 12px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+            background: var(--gray-bg); padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; gap: 12px;
         }
-
         .detail-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .detail-gs1 {
-            background: rgba(0,0,0,0.05);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: var(--text-gray);
-        }
-
-        .dark-mode .detail-gs1 {
-            background: rgba(255,255,255,0.1);
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            font-size: 1.1rem; font-weight: 600;
         }
 
         .tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border);
-            background: var(--gray-bg);
-            border-radius: 6px 6px 0 0;
-            overflow-x: auto;
+            display: flex; border-bottom: 1px solid var(--border);
+            background: var(--gray-bg); border-radius: 6px 6px 0 0; overflow-x: auto;
         }
-
         .tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-            white-space: nowrap;
-            color: var(--text-dark);
+            flex: 1; text-align: center; padding: 12px; font-weight: 600; cursor: pointer;
+            border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; color: var(--text-dark);
         }
-
         .tab.active {
-            border-bottom-color: var(--primary);
-            color: var(--primary);
-            background: var(--primary-light);
+            border-bottom-color: var(--primary); color: var(--primary); background: var(--primary-light);
         }
-
         .tab-content { display: none; padding: 16px 0; }
         .tab-content.active { display: block; }
 
         .progress-track {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            padding: 16px 0;
-            overflow-x: auto;
-            gap: 8px;
+            display: flex; justify-content: space-between; position: relative;
+            padding: 16px 0; overflow-x: auto; gap: 8px;
         }
-
         .progress-track::before {
-            content: '';
-            position: absolute;
-            top: 24px;
-            left: 40px;
-            right: 40px;
-            height: 3px;
-            background: var(--border);
-            z-index: 1;
+            content: ''; position: absolute; top: 24px; left: 40px; right: 40px;
+            height: 3px; background: var(--border); z-index: 1;
         }
-
         .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-            flex: 1;
-            text-align: center;
-            min-width: 80px;
+            display: flex; flex-direction: column; align-items: center;
+            position: relative; z-index: 2; flex: 1; text-align: center; min-width: 80px;
         }
-
         .step-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-gray);
-            margin-bottom: 8px;
-            transition: background 0.3s ease;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--border); color: var(--text-gray);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 8px; transition: background 0.3s;
         }
-
         .step.done .step-icon { background: var(--success); color: white; }
         .step.active .step-icon {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 0 0 6px rgba(167, 139, 250, 0.3); /* 紫色外发光 */
+            background: var(--primary); color: white;
+            box-shadow: 0 0 0 6px rgba(167,139,250,0.3);
         }
-
         .step-label { font-weight: 600; font-size: 0.8rem; }
         .step-time { font-size: 0.75rem; color: var(--text-gray); }
 
         .logistics-line {
-            position: relative;
-            padding-left: 30px;
+            position: relative; padding-left: 30px;
         }
-
         .logistics-line::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 12px;
-            width: 2px;
-            background: var(--border);
+            content: ''; position: absolute; top: 0; bottom: 0; left: 12px;
+            width: 2px; background: var(--border);
         }
-
         .log-event {
-            display: flex;
-            margin-bottom: 16px;
-            position: relative;
-            flex-wrap: wrap;
+            display: flex; margin-bottom: 16px; position: relative; flex-wrap: wrap;
         }
-
         .dot {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--border);
-            border: 3px solid var(--card-bg);
-            margin-right: 12px;
-            flex-shrink: 0;
-            position: relative;
-            left: -12px;
-            transition: background 0.3s ease, border-color 0.3s ease;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--border); border: 3px solid var(--card-bg);
+            margin-right: 12px; flex-shrink: 0; position: relative; left: -12px;
+            transition: background 0.3s, border-color 0.3s;
         }
-
         .log-event.done .dot { background: var(--success); }
         .log-event.active .dot {
             background: var(--primary);
-            box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.3);
+            box-shadow: 0 0 0 4px rgba(167,139,250,0.3);
         }
-
         .event-info { flex: 1; min-width: 0; }
         .event-title { font-weight: 600; }
         .event-time, .event-location { font-size: 0.8rem; color: var(--text-gray); word-break: break-word; }
 
         .trace-list { list-style: none; }
-
         .trace-item {
-            display: flex;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            align-items: flex-start;
-            gap: 12px;
+            display: flex; padding: 12px 0; border-bottom: 1px solid var(--border);
+            align-items: flex-start; gap: 12px;
         }
-
         .trace-item:last-child { border-bottom: none; }
-
         .trace-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            color: var(--text-gray);
-            flex-shrink: 0;
-            transition: background 0.3s ease;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--border); color: var(--text-gray);
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 12px; flex-shrink: 0; transition: background 0.3s;
         }
-
         .trace-item.done .trace-icon { background: #d4edda; color: #1dd1a1; }
         .trace-item.active .trace-icon { background: var(--primary-light); color: var(--primary); }
-
-        /* 深色模式溯源完成项 —— 橙色主题 */
-        .dark-mode .trace-item.done .trace-icon {
-            background: #3a2a1a; /* 深橙色背景 */
-            color: #f39c12;      /* 橙色文字 */
-        }
-        .dark-mode .trace-item.active .trace-icon {
-            background: #382e5c; /* 深紫背景 */
-            color: #a78bfa;      /* 紫色文字 */
-        }
-
+        .dark-mode .trace-item.done .trace-icon { background: #3a2a1a; color: #f39c12; }
+        .dark-mode .trace-item.active .trace-icon { background: #382e5c; color: #a78bfa; }
         .trace-location { font-weight: 600; }
         .trace-desc { font-size: 0.8rem; color: var(--text-gray); }
         .trace-time { font-size: 0.8rem; color: var(--text-gray); }
 
         .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px;
         }
-
         .summary-item {
-            background: var(--gray-bg);
-            border-radius: 6px;
-            padding: 16px;
-            text-align: center;
+            background: var(--gray-bg); border-radius: 6px; padding: 16px; text-align: center;
         }
-
         .summary-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
         .summary-label { font-size: 0.8rem; color: var(--text-gray); }
 
-        .empty {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-gray);
-        }
+        .empty { text-align: center; padding: 40px; color: var(--text-gray); }
         .empty i { font-size: 3rem; color: var(--border); margin-bottom: 12px; }
 
         .placeholder-page {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 48px;
-            text-align: center;
-            box-shadow: var(--shadow);
+            background: var(--card-bg); border-radius: var(--radius); padding: 48px;
+            text-align: center; box-shadow: var(--shadow);
         }
+        .placeholder-icon { font-size: 4rem; color: var(--primary-light); margin-bottom: 24px; }
+        .placeholder-title { font-size: 1.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 16px; }
+        .placeholder-text { font-size: 1rem; color: var(--text-gray); max-width: 600px; margin: 0 auto; }
 
-        .placeholder-icon {
-            font-size: 4rem;
-            color: var(--primary-light);
-            margin-bottom: 24px;
-        }
-
-        .placeholder-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 16px;
-        }
-
-        .placeholder-text {
-            font-size: 1rem;
-            color: var(--text-gray);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* ========== 响应式设计 ========== */
+        /* ========== 響應式設計 ========== */
         @media (max-width: 1024px) {
-            :root { --sidebar-width: 200px; }
+            :root { --sidebar-width: 200px; }  /* 平板下侧边栏变窄 */
             .main { padding: 20px 24px; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); } /* 5列变2列 */
+            .dashboard-row { flex-direction: column; } /* 地图与公告堆叠 */
+            .map-card { flex: auto; }            /* 取消flex比例，自动 */
+            .bulletin-card { flex: auto; }
         }
-
         @media (max-width: 768px) {
-            .app { flex-direction: column; }
+            .app { flex-direction: column; }     /* 侧边栏与主内容垂直排列 */
             .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                flex-direction: row;
-                flex-wrap: wrap;
-                align-items: center;
-                padding: 16px;
+                width: 100%; height: auto; position: relative; /* 取消固定高度，流式 */
+                flex-direction: row; flex-wrap: wrap; align-items: center; padding: 16px;
             }
             .sidebar-header {
-                flex-direction: row;
-                border-bottom: none;
-                padding: 0;
-                margin-bottom: 0;
-                margin-right: 20px;
+                flex-direction: row; border-bottom: none; padding: 0; margin-bottom: 0; margin-right: 20px;
                 align-items: center;
             }
-            .avatar {
-                width: 50px; height: 50px;
-                font-size: 1.5rem;
-                margin-bottom: 0;
-                margin-right: 12px;
-            }
-            .user-info-wrapper {
-                align-items: flex-start;
-                text-align: left;
-            }
+            .avatar { width: 50px; height: 50px; font-size: 1.5rem; margin-bottom: 0; margin-right: 12px; }
+            .user-info-wrapper { align-items: flex-start; text-align: left; }
             .user-name, .user-title { text-align: left; }
             .nav {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 8px;
-                padding: 8px 0 0 0;
-                width: 100%;
+                flex-direction: row; flex-wrap: wrap; gap: 8px; padding: 8px 0 0 0; width: 100%;
             }
             .nav-card { justify-content: center; padding: 8px 12px; gap: 8px; font-size: 0.9rem; }
             .nav-card i { width: 20px; }
             .theme-toggle-container {
-                margin-top: 0;
-                border-top: none;
-                padding: 8px 0 0 0;
-                width: 100%;
+                margin-top: 0; border-top: none; padding: 8px 0 0 0; width: 100%;
             }
             .theme-toggle { justify-content: center; }
-            .main {
-                max-width: 100%;
-                padding: 16px;
-            }
-            .order-cards { grid-template-columns: 1fr; }
+            .main { max-width: 100%; padding: 16px; }
+            .order-cards { grid-template-columns: 1fr; } /* 订单卡片单列 */
             .progress-track {
-                flex-direction: column;
-                align-items: flex-start;
-                overflow-x: visible;
+                flex-direction: column; align-items: flex-start; overflow-x: visible;
             }
             .progress-track::before { display: none; }
             .step {
-                flex-direction: row;
-                width: 100%;
-                text-align: left;
-                min-width: auto;
-                gap: 12px;
+                flex-direction: row; width: 100%; text-align: left; min-width: auto; gap: 12px;
             }
             .step-icon { margin-bottom: 0; }
             .stats-grid { grid-template-columns: 1fr; }
@@ -891,9 +537,10 @@
             .filter-bar { flex-direction: column; align-items: stretch; }
             .filter-group { justify-content: space-between; }
             .filter-select { width: 70%; }
-            .filter-btn { width: 100%; }
+            .btn { width: 100%; }
+            .map-container { aspect-ratio: 1 / 1; } /* 移动端地图变为正方形 */
+            .order-list { max-height: 380px; }
         }
-
         @media (max-width: 480px) {
             .sidebar { padding: 12px; }
             .sidebar-header { margin-right: 12px; }
@@ -904,148 +551,144 @@
             .main { padding: 12px; }
             .welcome-title { font-size: 1.4rem; }
             .stat-number { font-size: 1.4rem; }
+            .map-container { aspect-ratio: 1 / 1; }
+            .order-list { max-height: 350px; }
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- ========== 左侧固定边栏 ========== -->
+        <!-- ========== 左側邊欄 ========= -->
         <aside class="sidebar">
+            <!-- 侧边栏区域 -->
             <div class="sidebar-header">
+                <!-- 头像与用户信息头部容器 -->
                 <div class="avatar">王</div>
+                <!-- 用户头像，文字“王”代表姓氏 -->
                 <div class="user-info-wrapper">
-                    <div class="user-name">王经理</div>
-                    <div class="user-title">客户代表</div>
+                    <div class="user-name">王經理</div>
+                    <!-- 用户姓名 -->
+                    <div class="user-title">客戶代表</div>
+                    <!-- 用户职务 -->
                 </div>
             </div>
             <nav class="nav">
-                <div class="nav-card active" data-page="home">
-                    <i class="fas fa-home"></i>
-                    <span>主页</span>
-                </div>
-                <div class="nav-card" data-page="orders">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>订单管理</span>
-                </div>
-                <div class="nav-card" data-page="trace">
-                    <i class="fas fa-leaf"></i>
-                    <span>原料溯源</span>
-                </div>
-                <div class="nav-card" data-page="logistics">
-                    <i class="fas fa-truck"></i>
-                    <span>物流看板</span>
-                </div>
-                <div class="nav-card" data-page="inventory">
-                    <i class="fas fa-warehouse"></i>
-                    <span>库存概览</span>
-                </div>
-                <div class="nav-card" data-page="report">
-                    <i class="fas fa-chart-line"></i>
-                    <span>报表分析</span>
-                </div>
-                <div class="nav-card" data-page="settings">
-                    <i class="fas fa-cog"></i>
-                    <span>系统设置</span>
-                </div>
+                <!-- 主导航菜单 -->
+                <div class="nav-card active" data-page="home"><i class="fas fa-home"></i><span>主頁</span></div>
+                <!-- 首页导航项，初始激活状态，data-page属性用于JS切换页面 -->
+                <div class="nav-card" data-page="orders"><i class="fas fa-shopping-cart"></i><span>訂單管理</span></div>
+                <!-- 订单管理页 -->
+                <div class="nav-card" data-page="trace"><i class="fas fa-leaf"></i><span>原料溯源</span></div>
+                <!-- 原料溯源页 -->
+                <div class="nav-card" data-page="logistics"><i class="fas fa-truck"></i><span>物流看板</span></div>
+                <!-- 物流看板页 -->
+                <div class="nav-card" data-page="inventory"><i class="fas fa-warehouse"></i><span>庫存概覽</span></div>
+                <!-- 库存概览页 -->
+                <div class="nav-card" data-page="report"><i class="fas fa-chart-line"></i><span>報表分析</span></div>
+                <!-- 报表分析页 -->
+                <div class="nav-card" data-page="settings"><i class="fas fa-cog"></i><span>系統設定</span></div>
+                <!-- 系统设置页 -->
             </nav>
-            <!-- 深色模式切换按钮 -->
             <div class="theme-toggle-container">
-                <div class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                    <span>深色模式</span>
-                </div>
+                <!-- 主题切换按钮容器，位于侧边栏底部 -->
+                <div class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i><span>深色模式</span></div>
+                <!-- 深色/浅色模式切换按钮，图标与文字 -->
             </div>
         </aside>
 
-        <!-- ========== 右侧主内容区（动态渲染）========== -->
+        <!-- ========== 右側主內容區（動態渲染）========= -->
         <main class="main" id="mainContent"></main>
+        <!-- 主内容区域，通过JavaScript动态渲染不同页面 -->
     </div>
 
     <script>
         // =========================================================================
-        // 一、全局数据配置（所有文本、订单数据均集中于此，便于维护）
+        // 一、全域文字常量定義 —— 用於多語言/多文本管理，所有界面文字集中在此
         // =========================================================================
         const TEXT = {
-            appName: "纺织产业控制塔",
-            appSub: "智能订单溯源",
-            welcomeTitle: "下午好，王经理",
-            welcomeDesc: "欢迎回到纺织产业控制塔，今日待办事项、供应链全景尽在掌握。",
-            statOrders: "实时订单",
-            statTrace: "溯源完成率",
-            statLogistics: "在途货柜",
-            statInventory: "库存预警",
-            recentTitle: "最近动态",
-            recentOrder: "新订单 #TX20230514001 已进入生产环节",
-            recentTrace: "新疆棉田批次 #XC2023-05 完成溯源认证",
-            recentLog: "集装箱 #MSKU9801234 已抵达广州港",
-            filterDate: "下单日期",
-            filterDateAll: "全部",
-            filterDate7d: "最近7天",
-            filterDate30d: "最近30天",
-            filterDate90d: "最近90天",
-            filterDateYear: "今年",
-            filterStatus: "订单状态",
-            filterStatusAll: "全部状态",
-            filterStatusConfirmed: "已确认",
-            filterStatusScheduled: "已排产",
-            filterStatusProducing: "生产中",
-            filterStatusShipped: "已发货",
-            filterStatusCompleted: "已完成",
-            filterApply: "应用筛选",
-            filterReset: "重置",
-            orderDetailTitle: "订单详情",
-            lastUpdate: "最后更新",
-            progress: "订单进度跟踪",
-            logistics: "物流跟踪",
-            trace: "信息溯源",
-            gs1: "GS1:",
-            amount: "订单金额",
-            date: "下单日期",
-            delivery: "交付日期",
-            emptyActive: "暂无实时订单",
-            emptyCompleted: "暂无已完成订单",
-            traceTitle: "原料溯源",
-            traceDesc: "全流程原料追溯，从田间到成衣，每一批次均可查。",
-            logisticsTitle: "物流看板",
-            logisticsDesc: "集装箱实时定位、轨迹回放、预计到港时间。",
-            inventoryTitle: "库存概览",
-            inventoryDesc: "美国仓库、海外仓、在途库存动态监控。",
-            reportTitle: "报表分析",
-            reportDesc: "供应链KPI、成本分析、供应商绩效。",
-            settingsTitle: "系统设置",
-            settingsDesc: "用户权限、接口配置、通知规则。"
+            appName: "紡織產業控制塔",               // 应用名称
+            appSub: "智能訂單溯源",                 // 副标题
+            welcomeTitle: "下午好，王經理",          // 欢迎语标题
+            welcomeDesc: "歡迎回到紡織產業控制塔，今日待辦事項、供應鏈全景盡在掌握。", // 欢迎描述
+            statOrders: "實時訂單",                 // 实时订单统计卡片标题
+            statScheduled: "已排產",                // 已排产统计卡片标题
+            statReady: "可發貨",                   // 可发货统计卡片标题
+            statShipped: "已發貨",                 // 已发货统计卡片标题
+            statCompleted: "已完成",                // 已完成统计卡片标题
+            mapTitle: "全球實時訂單分佈",            // 地图标题
+            bulletinTitle: "最新動態",              // 公告栏标题
+            filterDate: "下單日期",                 // 订单筛选：日期标签
+            filterDateAll: "全部",                 // 筛选：全部日期
+            filterDate7d: "最近7天",               // 筛选：最近7天
+            filterDate30d: "最近30天",             // 筛选：最近30天
+            filterDate90d: "最近90天",             // 筛选：最近90天
+            filterDateYear: "今年",                // 筛选：今年
+            filterStatus: "訂單狀態",               // 订单状态筛选标签
+            filterStatusAll: "全部狀態",            // 筛选：全部状态
+            filterStatusConfirmed: "已確認",         // 筛选：已确认
+            filterStatusScheduled: "已排產",        // 筛选：已排产
+            filterStatusProducing: "生產中",        // 筛选：生产中
+            filterStatusReady: "待發貨",            // 筛选：待发货
+            filterStatusShipped: "運輸中",          // 筛选：运输中
+            filterStatusCompleted: "已完成",        // 筛选：已完成
+            filterApply: "應用篩選",                // 应用筛选按钮文本
+            filterReset: "重置",                   // 重置筛选按钮文本
+            orderDetailTitle: "訂單詳情",           // 订单详情标题
+            lastUpdate: "最後更新",                 // 最后更新时间前缀
+            progress: "訂單進度跟蹤",               // 进度追踪选项卡
+            logistics: "物流跟蹤",                 // 物流跟踪选项卡
+            trace: "信息溯源",                     // 信息溯源选项卡
+            gs1: "GS1:",                         // GS1编码前缀
+            amount: "訂單金額",                    // 订单金额标签
+            date: "下單日期",                      // 下单日期标签
+            delivery: "交付日期",                  // 交付日期标签
+            emptyActive: "暫無實時訂單",            // 实时订单列表为空提示
+            emptyCompleted: "暫無已完成訂單",        // 已完成订单列表为空提示
+            traceTitle: "原料溯源",                // 原料溯源占位页标题
+            traceDesc: "全流程原料追溯，從田間到成衣，每一批次均可查。", // 溯源描述
+            logisticsTitle: "物流看板",             // 物流看板占位页标题
+            logisticsDesc: "集裝箱實時定位、軌跡回放、預計到港時間。", // 物流描述
+            inventoryTitle: "庫存概覽",            // 库存概览占位页标题
+            inventoryDesc: "美國倉庫、海外倉、在途庫存動態監控。", // 库存描述
+            reportTitle: "報表分析",               // 报表分析占位页标题
+            reportDesc: "供應鏈KPI、成本分析、供應商績效。", // 报表描述
+            settingsTitle: "系統設定",              // 系统设置占位页标题
+            settingsDesc: "用戶權限、接口配置、通知規則。" // 设置描述
         };
 
-        // 实时订单数据（完整版）
+        // ==================== 實時訂單數據 ====================
+        // 包含所有当前活跃订单，每个对象包含订单号、GS1、金额、日期、状态、地理位置、进度、物流、溯源信息
         const ACTIVE_ORDERS = [
             {
-                id: "TX20230514001",
-                gs1: "06940123456789",
-                amount: "¥24,580",
-                date: "2023-05-14",
-                status: "生产中",
-                progress: [
-                    { title: "下单", time: "05-14 11:26", done: true, desc: "已提交" },
-                    { title: "审核", time: "05-14 11:27", done: true, desc: "通过" },
-                    { title: "付款", time: "05-14 11:28", done: true, desc: "已确认" },
-                    { title: "排产", time: "05-14 14:00", done: true, desc: "已排产" },
-                    { title: "生产", time: "05-14 23:24", done: true, desc: "进行中" },
-                    { title: "质检", time: "预计05-20", done: false, desc: "等待" },
-                    { title: "发货", time: "预计05-22", done: false, desc: "等待" }
+                id: "TX20230514001",              // 订单ID
+                gs1: "06940123456789",            // GS1全球贸易项目代码
+                amount: "¥24,580",                // 订单金额
+                date: "2023-05-14",               // 下单日期
+                status: "生產中",                  // 订单状态
+                location: { lat: 31.2304, lng: 121.4737 }, // 上海坐标（纬度,经度）
+                progress: [                       // 生产进度步骤数组
+                    { title: "下單", time: "05-14 11:26", done: true, desc: "已提交" },
+                    { title: "審核", time: "05-14 11:27", done: true, desc: "通過" },
+                    { title: "付款", time: "05-14 11:28", done: true, desc: "已確認" },
+                    { title: "排產", time: "05-14 14:00", done: true, desc: "已排產" },
+                    { title: "生產", time: "05-14 23:24", done: true, desc: "進行中" },
+                    { title: "質檢", time: "預計05-20", done: false, desc: "等待" },
+                    { title: "發貨", time: "預計05-22", done: false, desc: "等待" }
                 ],
-                logistics: [
-                    { title: "已揽收", time: "05-16 10:15", loc: "珠海物流中心", done: true },
-                    { title: "运输中", time: "05-16 14:30", loc: "广珠高速", done: true },
-                    { title: "到达中转站", time: "05-17 09:20", loc: "广州分拨中心", done: true },
+                logistics: [                      // 物流跟踪步骤
+                    { title: "已攬收", time: "05-16 10:15", loc: "珠海物流中心", done: false },
+                    { title: "運輸中", time: "05-16 14:30", loc: "廣珠高速", done: false },
+                    { title: "到達中轉站", time: "05-17 09:20", loc: "廣州分撥中心", done: false },
                     { title: "派送中", time: "05-18 08:45", loc: "上海配送站", done: false },
-                    { title: "已签收", time: "预计05-19", loc: "上海纺织", done: false }
+                    { title: "已簽收", time: "預計05-19", loc: "上海紡織", done: false }
                 ],
-                trace: [
-                    { loc: "新疆棉田", time: "03-10", status: "done", desc: "长绒棉" },
-                    { loc: "山东纺纱", time: "03-20", status: "done", desc: "棉纱" },
+                trace: [                         // 原料溯源信息
+                    { loc: "新疆棉田", time: "03-10", status: "done", desc: "長絨棉" },
+                    { loc: "山東紡紗", time: "03-20", status: "done", desc: "棉紗" },
                     { loc: "浙江印染", time: "04-05", status: "done", desc: "印染" },
-                    { loc: "浙江成衣", time: "05-10", status: "active", desc: "裁剪缝制" },
-                    { loc: "上海质检", time: "预计05-20", status: "pending", desc: "待质检" }
+                    { loc: "浙江成衣", time: "05-10", status: "active", desc: "裁剪縫製" },
+                    { loc: "上海質檢", time: "預計05-20", status: "pending", desc: "待質檢" },
+                    { loc: "上海物流", time: "預計05-22", status: "pending", desc: "待發貨" }
                 ]
             },
             {
@@ -1053,61 +696,184 @@
                 gs1: "06940123456790",
                 amount: "¥18,920",
                 date: "2023-05-15",
-                status: "已排产",
+                status: "已排產",
+                location: { lat: 31.2304, lng: 121.4737 }, // 上海（与上一订单重合）
                 progress: [
-                    { title: "下单", time: "05-15 09:15", done: true, desc: "已提交" },
-                    { title: "审核", time: "05-15 09:30", done: true, desc: "通过" },
-                    { title: "付款", time: "05-15 10:05", done: true, desc: "已确认" },
-                    { title: "排产", time: "05-15 14:20", done: true, desc: "已排产" },
-                    { title: "生产", time: "等待", done: false, desc: "未开始" },
-                    { title: "质检", time: "预计05-21", done: false, desc: "待定" },
-                    { title: "发货", time: "预计05-23", done: false, desc: "待定" }
+                    { title: "下單", time: "05-15 09:15", done: true, desc: "已提交" },
+                    { title: "審核", time: "05-15 09:30", done: true, desc: "通過" },
+                    { title: "付款", time: "05-15 10:05", done: true, desc: "已確認" },
+                    { title: "排產", time: "05-15 14:20", done: true, desc: "已排產" },
+                    { title: "生產", time: "等待", done: false, desc: "未開始" },
+                    { title: "質檢", time: "預計05-21", done: false, desc: "待定" },
+                    { title: "發貨", time: "預計05-23", done: false, desc: "待定" }
                 ],
                 logistics: [],
-                trace: []
+                trace: [
+                    { loc: "新疆棉田", time: "03-15", status: "done", desc: "有機棉" },
+                    { loc: "江蘇紡紗", time: "03-25", status: "done", desc: "棉紗" },
+                    { loc: "浙江印染", time: "04-10", status: "done", desc: "環保印染" },
+                    { loc: "浙江成衣", time: "05-05", status: "done", desc: "面料預備" },
+                    { loc: "北京質檢", time: "預計05-20", status: "pending", desc: "待質檢" },
+                    { loc: "北京物流", time: "預計05-22", status: "pending", desc: "待發貨" }
+                ]
+            },
+            {
+                id: "TX20230518004",
+                gs1: "06940123456795",
+                amount: "¥21,300",
+                date: "2023-05-18",
+                status: "待發貨",
+                location: { lat: 23.1291, lng: 113.2644 }, // 广州
+                progress: [
+                    { title: "下單", time: "05-18 10:00", done: true, desc: "已提交" },
+                    { title: "審核", time: "05-18 10:15", done: true, desc: "通過" },
+                    { title: "付款", time: "05-18 10:30", done: true, desc: "已確認" },
+                    { title: "排產", time: "05-18 11:00", done: true, desc: "已排產" },
+                    { title: "生產", time: "05-19 08:00", done: true, desc: "完成" },
+                    { title: "質檢", time: "05-20 14:00", done: true, desc: "通過" },
+                    { title: "發貨", time: "預計05-22", done: false, desc: "待發貨" }
+                ],
+                logistics: [],
+                trace: [
+                    { loc: "新疆棉田", time: "04-01", status: "done", desc: "長絨棉" },
+                    { loc: "山東紡紗", time: "04-12", status: "done", desc: "棉紗" },
+                    { loc: "江蘇印染", time: "04-25", status: "done", desc: "活性印染" },
+                    { loc: "江蘇成衣", time: "05-10", status: "done", desc: "縫製成衣" },
+                    { loc: "廣州質檢", time: "05-20", status: "done", desc: "已通過" },
+                    { loc: "廣州物流", time: "預計05-22", status: "pending", desc: "待發貨" }
+                ]
             },
             {
                 id: "TX20230512003",
                 gs1: "06940123456791",
                 amount: "¥32,150",
                 date: "2023-05-12",
-                status: "运输中",
+                status: "運輸中",
+                location: { lat: 23.1291, lng: 113.2644 }, // 广州
                 progress: [
-                    { title: "下单", time: "05-12 14:30", done: true, desc: "已提交" },
-                    { title: "审核", time: "05-12 14:45", done: true, desc: "通过" },
-                    { title: "付款", time: "05-12 15:20", done: true, desc: "已确认" },
-                    { title: "排产", time: "05-12 16:30", done: true, desc: "已排产" },
-                    { title: "生产", time: "05-13 09:10", done: true, desc: "完成" },
-                    { title: "质检", time: "05-15 16:30", done: true, desc: "通过" },
-                    { title: "发货", time: "05-16 10:15", done: true, desc: "已发货" }
+                    { title: "下單", time: "05-12 14:30", done: true, desc: "已提交" },
+                    { title: "審核", time: "05-12 14:45", done: true, desc: "通過" },
+                    { title: "付款", time: "05-12 15:20", done: true, desc: "已確認" },
+                    { title: "排產", time: "05-12 16:30", done: true, desc: "已排產" },
+                    { title: "生產", time: "05-13 09:10", done: true, desc: "完成" },
+                    { title: "質檢", time: "05-15 16:30", done: true, desc: "通過" },
+                    { title: "發貨", time: "05-16 10:15", done: true, desc: "已發貨" }
                 ],
                 logistics: [
-                    { title: "已揽收", time: "05-16 10:15", loc: "珠海物流中心", done: true },
-                    { title: "运输中", time: "05-16 14:30", loc: "广珠高速", done: true },
-                    { title: "到达中转站", time: "05-17 09:20", loc: "广州分拨中心", done: true },
-                    { title: "派送中", time: "05-18 08:00", loc: "广州配送站", done: false },
-                    { title: "已签收", time: "预计05-19", loc: "广州进出口", done: false }
+                    { title: "已攬收", time: "05-16 10:15", loc: "珠海物流中心", done: true },
+                    { title: "運輸中", time: "05-16 14:30", loc: "廣珠高速", done: true },
+                    { title: "到達中轉站", time: "05-17 09:20", loc: "廣州分撥中心", done: true },
+                    { title: "派送中", time: "05-18 08:00", loc: "廣州配送站", done: false },
+                    { title: "已簽收", time: "預計05-19", loc: "廣州進出口", done: false }
                 ],
-                trace: []
+                trace: [
+                    { loc: "新疆棉田", time: "03-05", status: "done", desc: "長絨棉" },
+                    { loc: "山東紡紗", time: "03-18", status: "done", desc: "棉紗" },
+                    { loc: "江蘇印染", time: "04-02", status: "done", desc: "布料印染" },
+                    { loc: "浙江成衣", time: "05-01", status: "done", desc: "服裝製作" },
+                    { loc: "廣州質檢", time: "05-15", status: "done", desc: "合格" },
+                    { loc: "廣州物流", time: "05-16", status: "done", desc: "已發貨" }
+                ]
+            },
+            {
+                id: "TX20230519005",
+                gs1: "06940123456796",
+                amount: "¥45,200",
+                date: "2023-05-19",
+                status: "運輸中",
+                location: { lat: 40.7128, lng: -74.0060 }, // 纽约
+                progress: [
+                    { title: "下單", time: "05-19 09:00", done: true, desc: "已提交" },
+                    { title: "審核", time: "05-19 09:20", done: true, desc: "通過" },
+                    { title: "付款", time: "05-19 09:45", done: true, desc: "已確認" },
+                    { title: "排產", time: "05-19 10:30", done: true, desc: "已排產" },
+                    { title: "生產", time: "05-20 08:00", done: true, desc: "完成" },
+                    { title: "質檢", time: "05-20 15:30", done: true, desc: "通過" },
+                    { title: "發貨", time: "05-21 09:00", done: true, desc: "已發貨" }
+                ],
+                logistics: [
+                    { title: "已攬收", time: "05-21 10:00", loc: "紐約物流中心", done: true },
+                    { title: "運輸中", time: "05-21 14:20", loc: "大西洋航線", done: false }
+                ],
+                trace: [
+                    { loc: "澳洲羊毛", time: "04-10", status: "done", desc: "美利奴羊毛" },
+                    { loc: "意大利紡紗", time: "04-25", status: "done", desc: "精紡紗線" },
+                    { loc: "法國印染", time: "05-05", status: "done", desc: "高級印染" },
+                    { loc: "土耳其成衣", time: "05-15", status: "done", desc: "縫製" },
+                    { loc: "紐約質檢", time: "05-20", status: "done", desc: "合格" },
+                    { loc: "紐約物流", time: "05-21", status: "done", desc: "已發貨" }
+                ]
+            },
+            {
+                id: "TX20230520006",
+                gs1: "06940123456797",
+                amount: "¥38,750",
+                date: "2023-05-20",
+                status: "生產中",
+                location: { lat: 51.5074, lng: -0.1278 }, // 伦敦
+                progress: [
+                    { title: "下單", time: "05-20 11:00", done: true, desc: "已提交" },
+                    { title: "審核", time: "05-20 11:20", done: true, desc: "通過" },
+                    { title: "付款", time: "05-20 11:50", done: true, desc: "已確認" },
+                    { title: "排產", time: "05-20 13:30", done: true, desc: "已排產" },
+                    { title: "生產", time: "05-21 09:00", done: true, desc: "進行中" },
+                    { title: "質檢", time: "預計05-25", done: false, desc: "等待" },
+                    { title: "發貨", time: "預計05-27", done: false, desc: "等待" }
+                ],
+                logistics: [],
+                trace: [
+                    { loc: "新疆棉田", time: "04-15", status: "done", desc: "長絨棉" },
+                    { loc: "印度紡紗", time: "04-28", status: "done", desc: "棉紗" },
+                    { loc: "土耳其印染", time: "05-08", status: "done", desc: "活性印染" },
+                    { loc: "英國成衣", time: "05-18", status: "active", desc: "裁剪縫製" },
+                    { loc: "倫敦質檢", time: "預計05-25", status: "pending", desc: "待質檢" }
+                ]
+            },
+            {
+                id: "TX20230521007",
+                gs1: "06940123456798",
+                amount: "¥29,300",
+                date: "2023-05-21",
+                status: "待發貨",
+                location: { lat: 35.6895, lng: 139.6917 }, // 东京
+                progress: [
+                    { title: "下單", time: "05-21 08:30", done: true, desc: "已提交" },
+                    { title: "審核", time: "05-21 08:50", done: true, desc: "通過" },
+                    { title: "付款", time: "05-21 09:20", done: true, desc: "已確認" },
+                    { title: "排產", time: "05-21 10:00", done: true, desc: "已排產" },
+                    { title: "生產", time: "05-22 08:00", done: true, desc: "完成" },
+                    { title: "質檢", time: "05-22 16:00", done: true, desc: "通過" },
+                    { title: "發貨", time: "預計05-24", done: false, desc: "待發貨" }
+                ],
+                logistics: [],
+                trace: [
+                    { loc: "蒙古羊絨", time: "04-20", status: "done", desc: "優質羊絨" },
+                    { loc: "日本紡紗", time: "05-02", status: "done", desc: "精紡" },
+                    { loc: "日本印染", time: "05-10", status: "done", desc: "傳統工藝" },
+                    { loc: "日本成衣", time: "05-18", status: "done", desc: "縫製" },
+                    { loc: "東京質檢", time: "05-22", status: "done", desc: "合格" },
+                    { loc: "東京物流", time: "預計05-24", status: "pending", desc: "待發貨" }
+                ]
             }
         ];
 
-        // 已完成订单数据（完整版）
+        // ==================== 已完成訂單數據 ====================
+        // 已完成订单，结构类似，包含交付日期
         const COMPLETED_ORDERS = [
             {
                 id: "TX20230428001",
                 gs1: "06940123456792",
                 amount: "¥15,680",
                 date: "2023-04-28",
-                delivery: "05-10",
-                trace: [
-                    { loc: "新疆棉田", time: "02-10", status: "done", desc: "有机棉" },
-                    { loc: "山东纺纱", time: "02-25", status: "done", desc: "棉纱" },
-                    { loc: "浙江印染", time: "03-12", status: "done", desc: "环保印染" },
-                    { loc: "浙江成衣", time: "04-05", status: "done", desc: "缝制" },
-                    { loc: "上海质检", time: "04-20", status: "done", desc: "合格" },
-                    { loc: "杭州物流", time: "04-25", status: "done", desc: "发货" },
-                    { loc: "杭州仓库", time: "05-10", status: "done", desc: "签收" }
+                delivery: "05-10",              // 交付日期
+                trace: [                        // 完整溯源信息，全部状态为done
+                    { loc: "新疆棉田", time: "02-10", status: "done", desc: "有機棉" },
+                    { loc: "山東紡紗", time: "02-25", status: "done", desc: "棉紗" },
+                    { loc: "浙江印染", time: "03-12", status: "done", desc: "環保印染" },
+                    { loc: "浙江成衣", time: "04-05", status: "done", desc: "縫製" },
+                    { loc: "上海質檢", time: "04-20", status: "done", desc: "合格" },
+                    { loc: "杭州物流", time: "04-25", status: "done", desc: "發貨" },
+                    { loc: "杭州倉庫", time: "05-10", status: "done", desc: "簽收" }
                 ]
             },
             {
@@ -1116,7 +882,15 @@
                 amount: "¥28,940",
                 date: "2023-04-15",
                 delivery: "05-05",
-                trace: []
+                trace: [
+                    { loc: "新疆棉田", time: "01-20", status: "done", desc: "長絨棉" },
+                    { loc: "江蘇紡紗", time: "02-05", status: "done", desc: "棉紗" },
+                    { loc: "江蘇印染", time: "02-25", status: "done", desc: "高級印染" },
+                    { loc: "廣東成衣", time: "03-20", status: "done", desc: "定製縫製" },
+                    { loc: "深圳質檢", time: "04-10", status: "done", desc: "合格" },
+                    { loc: "深圳物流", time: "04-28", status: "done", desc: "發貨" },
+                    { loc: "深圳倉庫", time: "05-05", status: "done", desc: "簽收" }
+                ]
             },
             {
                 id: "TX20230405003",
@@ -1124,47 +898,58 @@
                 amount: "¥12,350",
                 date: "2023-04-05",
                 delivery: "04-25",
-                trace: []
+                trace: [
+                    { loc: "新疆棉田", time: "01-15", status: "done", desc: "優質棉" },
+                    { loc: "山東紡紗", time: "01-30", status: "done", desc: "棉紗" },
+                    { loc: "浙江印染", time: "02-15", status: "done", desc: "布料印染" },
+                    { loc: "江蘇成衣", time: "03-10", status: "done", desc: "服裝製作" },
+                    { loc: "南京質檢", time: "04-01", status: "done", desc: "合格" },
+                    { loc: "南京物流", time: "04-20", status: "done", desc: "發貨" },
+                    { loc: "南京門店", time: "04-25", status: "done", desc: "交付" }
+                ]
             }
         ];
 
         // =========================================================================
-        // 二、全局状态变量
+        // 二、全域狀態變數 —— 記錄當前頁面、選中訂單、篩選條件及地圖實例
         // =========================================================================
-        let currentPage = 'home';
-        let selectedOrder = null;
-        let selectedType = null;
-        let currentFilter = { dateRange: 'all', status: 'all' };
+        let currentPage = 'home';                // 当前页面标识，默认为主页
+        let selectedOrder = null;               // 当前选中的订单对象
+        let selectedType = null;                // 选中订单的类型：'active' 或 'completed'
+        let currentFilter = { dateRange: 'all', status: 'all' }; // 当前筛选条件：日期范围、订单状态
+        let mapInstance = null;                 // Leaflet 地图实例对象
 
         // =========================================================================
-        // 三、通用工具函数
+        // 三、通用工具函數
         // =========================================================================
         const nowStr = () => {
+            // 返回当前时间的格式化字符串 "今天 HH:MM"
             let d = new Date();
             return `今天 ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
         };
 
         function inRange(date, range) {
-            if (range === 'all') return true;
-            const orderDate = new Date(date);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            if (range === '7d') {
+            // 判断给定日期是否在指定的日期范围内
+            if (range === 'all') return true;      // 全部范围总是返回true
+            const orderDate = new Date(date);      // 将订单日期字符串转为Date对象
+            const today = new Date();              // 当前日期
+            today.setHours(0, 0, 0, 0);            // 将当前时间归零，只比较日期部分
+            if (range === '7d') {                  // 最近7天
                 const target = new Date(today);
                 target.setDate(today.getDate() - 7);
                 return orderDate >= target;
             }
-            if (range === '30d') {
+            if (range === '30d') {                 // 最近30天
                 const target = new Date(today);
                 target.setDate(today.getDate() - 30);
                 return orderDate >= target;
             }
-            if (range === '90d') {
+            if (range === '90d') {                 // 最近90天
                 const target = new Date(today);
                 target.setDate(today.getDate() - 90);
                 return orderDate >= target;
             }
-            if (range === 'year') {
+            if (range === 'year') {                // 今年
                 const yearStart = new Date(today.getFullYear(), 0, 1);
                 return orderDate >= yearStart;
             }
@@ -1172,6 +957,7 @@
         }
 
         function filterOrders(arr) {
+            // 根据当前筛选条件过滤订单数组
             return arr.filter(o => 
                 inRange(o.date, currentFilter.dateRange) && 
                 (currentFilter.status === 'all' || o.status === currentFilter.status)
@@ -1179,58 +965,132 @@
         }
 
         // =========================================================================
-        // 四、深色模式切换功能（紫色主色 + 橙色成功）
+        // 四、深色模式切換
         // =========================================================================
         function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const htmlEl = document.documentElement;
-            const toggleIcon = document.querySelector('#themeToggle i');
-            const toggleText = document.querySelector('#themeToggle span');
+            // 初始化主题：从localStorage读取保存的主题，并应用到页面
+            const savedTheme = localStorage.getItem('theme'); // 读取本地存储的theme值
+            const htmlEl = document.documentElement;         // html根元素
+            const toggleIcon = document.querySelector('#themeToggle i'); // 切换按钮图标
+            const toggleText = document.querySelector('#themeToggle span'); // 切换按钮文字
 
             if (savedTheme === 'dark') {
-                htmlEl.classList.add('dark-mode');
+                htmlEl.classList.add('dark-mode');          // 添加深色模式类
                 if (toggleIcon) {
-                    toggleIcon.classList.remove('fa-moon');
-                    toggleIcon.classList.add('fa-sun');
+                    toggleIcon.classList.remove('fa-moon');  // 移除月亮图标
+                    toggleIcon.classList.add('fa-sun');      // 添加太阳图标
                 }
-                if (toggleText) toggleText.textContent = '浅色模式';
+                if (toggleText) toggleText.textContent = '淺色模式'; // 文字改为“浅色模式”
             } else {
-                htmlEl.classList.remove('dark-mode');
+                htmlEl.classList.remove('dark-mode');        // 移除深色模式类
                 if (toggleIcon) {
-                    toggleIcon.classList.remove('fa-sun');
-                    toggleIcon.classList.add('fa-moon');
+                    toggleIcon.classList.remove('fa-sun');   // 移除太阳图标
+                    toggleIcon.classList.add('fa-moon');     // 添加月亮图标
                 }
-                if (toggleText) toggleText.textContent = '深色模式';
+                if (toggleText) toggleText.textContent = '深色模式'; // 文字改为“深色模式”
             }
         }
 
         function toggleTheme() {
+            // 切换深色/浅色模式，并保存状态到localStorage
             const htmlEl = document.documentElement;
             const toggleIcon = document.querySelector('#themeToggle i');
             const toggleText = document.querySelector('#themeToggle span');
 
             if (htmlEl.classList.contains('dark-mode')) {
-                htmlEl.classList.remove('dark-mode');
+                htmlEl.classList.remove('dark-mode');        // 当前深色 -> 浅色
                 localStorage.setItem('theme', 'light');
                 toggleIcon.classList.remove('fa-sun');
                 toggleIcon.classList.add('fa-moon');
                 toggleText.textContent = '深色模式';
             } else {
-                htmlEl.classList.add('dark-mode');
+                htmlEl.classList.add('dark-mode');           // 当前浅色 -> 深色
                 localStorage.setItem('theme', 'dark');
                 toggleIcon.classList.remove('fa-moon');
                 toggleIcon.classList.add('fa-sun');
-                toggleText.textContent = '浅色模式';
+                toggleText.textContent = '淺色模式';
             }
         }
 
         // =========================================================================
-        // 五、页面渲染函数（完整实现，保证所有控件正常工作）
+        // 五、地圖渲染函數 —— 使用 fitBounds 自動縮放至所有點，讓地圖完全充滿容器
+        // =========================================================================
+        function initMap() {
+            // 初始化或刷新Leaflet地图，显示所有实时订单位置
+            if (mapInstance) {
+                mapInstance.remove();          // 如果已有地图实例，移除之
+                mapInstance = null;
+            }
+
+            const mapDiv = document.getElementById('orderMap'); // 获取地图容器DOM
+            if (!mapDiv) return;                               // 容器不存在则退出
+
+            const isDark = document.documentElement.classList.contains('dark-mode'); // 判断当前深色模式
+            const tileUrl = isDark 
+                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'    // 深色地图瓦片
+                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';              // 浅色地图瓦片（OpenStreetMap）
+            const attribution = isDark
+                ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; CartoDB'
+                : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+            mapInstance = L.map(mapDiv);       // 创建地图实例，绑定到mapDiv
+            L.tileLayer(tileUrl, { attribution }).addTo(mapInstance); // 添加瓦片图层
+
+            // 聚合相同位置的点，统计每个位置的订单数量
+            const locationGroups = {};
+            const allPoints = [];               // 存储所有点的坐标数组，用于设置视图边界
+            ACTIVE_ORDERS.forEach(order => {
+                if (!order.location) return;
+                const key = `${order.location.lat},${order.location.lng}`;
+                if (!locationGroups[key]) {
+                    locationGroups[key] = { lat: order.location.lat, lng: order.location.lng, orders: [] };
+                }
+                locationGroups[key].orders.push(order);
+                allPoints.push([order.location.lat, order.location.lng]);
+            });
+
+            // 为每个聚合点绘制圆形标记
+            Object.values(locationGroups).forEach(group => {
+                const count = group.orders.length;
+                const hasShipped = group.orders.some(o => o.status === '運輸中'); // 判断是否有运输中订单
+                const color = hasShipped ? '#2ecc71' : '#f39c12';                 // 绿色：运输中；橙色：其他
+                const radius = 12 + (count - 1) * 3;                              // 半径根据订单数量递增
+
+                const circle = L.circleMarker([group.lat, group.lng], {           // 创建圆点标记
+                    radius: radius,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(mapInstance);
+
+                // 统计该位置各状态订单数量
+                const statusCount = {};
+                group.orders.forEach(o => { statusCount[o.status] = (statusCount[o.status] || 0) + 1; });
+                let tooltipText = `<b>${count} 個訂單</b><br>`;
+                for (let [status, cnt] of Object.entries(statusCount)) {
+                    tooltipText += `${status}: ${cnt}<br>`;
+                }
+                circle.bindTooltip(tooltipText, { permanent: false, direction: 'top' }); // 绑定悬停提示
+            });
+
+            // 自动缩放至所有点，padding设置为[5,5]使边界紧凑，尽可能充满容器
+            if (allPoints.length > 0) {
+                mapInstance.fitBounds(allPoints, { padding: [5,5] });
+            } else {
+                mapInstance.setView([20, 0], 2); // 无点则默认世界视图
+            }
+        }
+
+        // =========================================================================
+        // 六、頁面渲染函數 —— 根据当前页面标识渲染不同内容
         // =========================================================================
         function renderPage(page) {
-            const mainEl = document.getElementById('mainContent');
-            currentPage = page;
+            const mainEl = document.getElementById('mainContent'); // 主内容容器
+            currentPage = page;                                    // 更新当前页面变量
 
+            // 更新导航栏激活状态
             document.querySelectorAll('.nav-card').forEach(card => {
                 card.classList.remove('active');
                 if (card.dataset.page === page) {
@@ -1240,14 +1100,18 @@
 
             switch (page) {
                 case 'home':
-                    mainEl.innerHTML = renderHomePage();
+                    mainEl.innerHTML = renderHomePage();           // 渲染主页
+                    setTimeout(() => {                            // 延迟执行，确保DOM已插入
+                        bindHomeCards();                          // 绑定主页统计卡片点击事件
+                        initMap();                                // 初始化地图
+                    }, 0);
                     break;
                 case 'orders':
-                    mainEl.innerHTML = renderOrdersPage();
-                    setTimeout(() => initOrdersPage(), 0);
+                    mainEl.innerHTML = renderOrdersPage();        // 渲染订单管理页
+                    setTimeout(() => initOrdersPage(), 0);        // 初始化订单页面逻辑
                     break;
                 case 'trace':
-                    mainEl.innerHTML = renderPlaceholder(TEXT.traceTitle, TEXT.traceDesc, 'fa-leaf');
+                    mainEl.innerHTML = renderPlaceholder(TEXT.traceTitle, TEXT.traceDesc, 'fa-leaf'); // 占位页
                     break;
                 case 'logistics':
                     mainEl.innerHTML = renderPlaceholder(TEXT.logisticsTitle, TEXT.logisticsDesc, 'fa-truck');
@@ -1262,11 +1126,22 @@
                     mainEl.innerHTML = renderPlaceholder(TEXT.settingsTitle, TEXT.settingsDesc, 'fa-cog');
                     break;
                 default:
-                    mainEl.innerHTML = renderHomePage();
+                    mainEl.innerHTML = renderHomePage();          // 默认返回主页
+                    setTimeout(() => {
+                        bindHomeCards();
+                        initMap();
+                    }, 0);
             }
         }
 
         function renderHomePage() {
+            // 生成主页的HTML字符串
+            const activeTotal = ACTIVE_ORDERS.length;            // 实时订单总数
+            const scheduledCount = ACTIVE_ORDERS.filter(o => o.status === '已排產').length;
+            const readyCount = ACTIVE_ORDERS.filter(o => o.status === '待發貨').length;
+            const shippedCount = ACTIVE_ORDERS.filter(o => o.status === '運輸中').length;
+            const completedCount = COMPLETED_ORDERS.length;      // 已完成订单总数
+
             return `
                 <div class="container">
                     <div class="welcome-card">
@@ -1274,69 +1149,113 @@
                         <div class="welcome-text">${TEXT.welcomeDesc}</div>
                     </div>
                     <div class="stats-grid">
-                        <div class="stat-card">
+                        <div class="stat-card" data-stat="active">
                             <div class="stat-info">
                                 <h4>${TEXT.statOrders}</h4>
-                                <div class="stat-number">24</div>
+                                <div class="stat-number">${activeTotal}</div>
                             </div>
                             <i class="fas fa-shopping-cart stat-icon"></i>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" data-stat="scheduled">
                             <div class="stat-info">
-                                <h4>${TEXT.statTrace}</h4>
-                                <div class="stat-number">92%</div>
+                                <h4>${TEXT.statScheduled}</h4>
+                                <div class="stat-number">${scheduledCount}</div>
+                            </div>
+                            <i class="fas fa-calendar-alt stat-icon"></i>
+                        </div>
+                        <div class="stat-card" data-stat="ready">
+                            <div class="stat-info">
+                                <h4>${TEXT.statReady}</h4>
+                                <div class="stat-number">${readyCount}</div>
+                            </div>
+                            <i class="fas fa-box-open stat-icon"></i>
+                        </div>
+                        <div class="stat-card" data-stat="shipped">
+                            <div class="stat-info">
+                                <h4>${TEXT.statShipped}</h4>
+                                <div class="stat-number">${shippedCount}</div>
+                            </div>
+                            <i class="fas fa-shipping-fast stat-icon"></i>
+                        </div>
+                        <div class="stat-card" data-stat="completed">
+                            <div class="stat-info">
+                                <h4>${TEXT.statCompleted}</h4>
+                                <div class="stat-number">${completedCount}</div>
                             </div>
                             <i class="fas fa-check-circle stat-icon"></i>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-info">
-                                <h4>${TEXT.statLogistics}</h4>
-                                <div class="stat-number">8</div>
-                            </div>
-                            <i class="fas fa-ship stat-icon"></i>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-info">
-                                <h4>${TEXT.statInventory}</h4>
-                                <div class="stat-number" style="color: var(--warning);">3</div>
-                            </div>
-                            <i class="fas fa-exclamation-triangle stat-icon" style="color: var(--warning);"></i>
-                        </div>
                     </div>
-                    <div class="recent-section">
-                        <div class="section-title">
-                            <i class="fas fa-history" style="color: var(--primary);"></i>
-                            <span>${TEXT.recentTitle}</span>
+                    <div class="dashboard-row">
+                        <div class="map-card">
+                            <div class="map-title">
+                                <i class="fas fa-globe-asia" style="color: var(--primary);"></i>
+                                <span>${TEXT.mapTitle}</span>
+                            </div>
+                            <div id="orderMap" class="map-container"></div>
+                            <div style="display: flex; gap: 20px; margin-top: 12px; justify-content: flex-end;">
+                                <span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; background-color: #f39c12;"></span> 生產中/待發貨/已排產</span>
+                                <span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; background-color: #2ecc71;"></span> 運輸中</span>
+                            </div>
                         </div>
-                        <ul class="activity-list">
-                            <li class="activity-item">
-                                <div class="activity-dot"></div>
-                                <div class="activity-content">
-                                    <div class="activity-title">${TEXT.recentOrder}</div>
-                                    <div class="activity-time">2分钟前</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-dot warning"></div>
-                                <div class="activity-content">
-                                    <div class="activity-title">${TEXT.recentTrace}</div>
-                                    <div class="activity-time">15分钟前</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-dot danger"></div>
-                                <div class="activity-content">
-                                    <div class="activity-title">${TEXT.recentLog}</div>
-                                    <div class="activity-time">1小时前</div>
-                                </div>
-                            </li>
-                        </ul>
+                        <div class="bulletin-card">
+                            <div class="bulletin-title">
+                                <i class="fas fa-bullhorn" style="color: var(--primary);"></i>
+                                <span>${TEXT.bulletinTitle}</span>
+                            </div>
+                            <ul class="bulletin-list">
+                                <li class="bulletin-item">
+                                    <strong>系統公告</strong><br>
+                                    全球地圖功能已上線，實時追蹤訂單位置。
+                                    <div class="bulletin-time">5分鐘前</div>
+                                </li>
+                                <li class="bulletin-item">
+                                    <strong>訂單更新</strong><br>
+                                    訂單 #TX20230514001 已進入生產環節。
+                                    <div class="bulletin-time">15分鐘前</div>
+                                </li>
+                                <li class="bulletin-item">
+                                    <strong>物流動態</strong><br>
+                                    集裝箱 #MSKU9801234 已抵達廣州港。
+                                    <div class="bulletin-time">1小時前</div>
+                                </li>
+                                <li class="bulletin-item">
+                                    <strong>溯源完成</strong><br>
+                                    新疆棉田批次 #XC2023-05 完成溯源認證。
+                                    <div class="bulletin-time">2小時前</div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             `;
         }
 
+        function bindHomeCards() {
+            // 为主页统计卡片绑定点击事件，点击后跳转订单管理页并预设状态筛选
+            document.querySelector('.stat-card[data-stat="scheduled"]')?.addEventListener('click', () => {
+                currentFilter.status = '已排產';
+                renderPage('orders');
+            });
+            document.querySelector('.stat-card[data-stat="ready"]')?.addEventListener('click', () => {
+                currentFilter.status = '待發貨';
+                renderPage('orders');
+            });
+            document.querySelector('.stat-card[data-stat="shipped"]')?.addEventListener('click', () => {
+                currentFilter.status = '運輸中';
+                renderPage('orders');
+            });
+            document.querySelector('.stat-card[data-stat="active"]')?.addEventListener('click', () => {
+                currentFilter.status = 'all';      // 实时订单卡片，显示全部状态
+                renderPage('orders');
+            });
+            document.querySelector('.stat-card[data-stat="completed"]')?.addEventListener('click', () => {
+                currentFilter.status = 'all';
+                renderPage('orders');
+            });
+        }
+
         function renderOrdersPage() {
+            // 生成订单管理页HTML字符串
             return `
                 <div class="container">
                     <div class="filter-bar" id="ordersFilterBar"></div>
@@ -1345,13 +1264,13 @@
                             <div class="card-header active">
                                 <div class="card-title">
                                     <i class="fas fa-clock"></i>
-                                    <span>实时订单</span>
+                                    <span>實時訂單</span>
                                     <span class="order-count" id="activeCount">0</span>
                                 </div>
                                 <div class="card-icon"><i class="fas fa-chevron-down"></i></div>
                             </div>
                             <div class="card-content">
-                                <div style="font-size:0.9rem; color:var(--text-gray); margin-bottom:12px;">请选择要查看的实时订单：</div>
+                                <div style="font-size:0.9rem; color:var(--text-gray); margin-bottom:12px;">請選擇要查看的實時訂單：</div>
                                 <div class="order-list" id="activeList"></div>
                             </div>
                         </div>
@@ -1359,13 +1278,13 @@
                             <div class="card-header">
                                 <div class="card-title">
                                     <i class="fas fa-check-circle"></i>
-                                    <span>已完成订单</span>
+                                    <span>已完成訂單</span>
                                     <span class="order-count" id="completedCount">0</span>
                                 </div>
                                 <div class="card-icon"><i class="fas fa-chevron-down"></i></div>
                             </div>
                             <div class="card-content">
-                                <div style="font-size:0.9rem; color:var(--text-gray); margin-bottom:12px;">请选择要查看的已完成订单：</div>
+                                <div style="font-size:0.9rem; color:var(--text-gray); margin-bottom:12px;">請選擇要查看的已完成訂單：</div>
                                 <div class="order-list" id="completedList"></div>
                             </div>
                         </div>
@@ -1376,6 +1295,7 @@
         }
 
         function renderPlaceholder(title, desc, iconClass) {
+            // 生成功能开发中占位页
             return `
                 <div class="container">
                     <div class="placeholder-page">
@@ -1384,21 +1304,23 @@
                         </div>
                         <div class="placeholder-title">${title}</div>
                         <div class="placeholder-text">${desc}</div>
-                        <div style="margin-top: 24px; color: var(--text-gray);">功能开发中，敬请期待。</div>
+                        <div style="margin-top: 24px; color: var(--text-gray);">功能開發中，敬請期待。</div>
                     </div>
                 </div>
             `;
         }
 
         // =========================================================================
-        // 六、订单管理页面专用初始化函数
+        // 七、訂單管理頁面專用初始化函數
         // =========================================================================
         function initOrdersPage() {
+            // 初始化订单管理页面：清空选中、渲染筛选栏、刷新订单列表、绑定折叠卡片事件
             selectedOrder = null;
             selectedType = null;
 
-            const fb = document.getElementById('ordersFilterBar');
+            const fb = document.getElementById('ordersFilterBar'); // 筛选栏容器
             if (fb) {
+                // 动态插入筛选栏HTML
                 fb.innerHTML = `
                     <div class="filter-group">
                         <span class="filter-label">${TEXT.filterDate}</span>
@@ -1414,21 +1336,34 @@
                         <span class="filter-label">${TEXT.filterStatus}</span>
                         <select id="statusSelect" class="filter-select">
                             <option value="all">${TEXT.filterStatusAll}</option>
-                            <option value="已确认">${TEXT.filterStatusConfirmed}</option>
-                            <option value="已排产">${TEXT.filterStatusScheduled}</option>
-                            <option value="生产中">${TEXT.filterStatusProducing}</option>
-                            <option value="已发货">${TEXT.filterStatusShipped}</option>
+                            <option value="已確認">${TEXT.filterStatusConfirmed}</option>
+                            <option value="已排產">${TEXT.filterStatusScheduled}</option>
+                            <option value="生產中">${TEXT.filterStatusProducing}</option>
+                            <option value="待發貨">${TEXT.filterStatusReady}</option>
+                            <option value="運輸中">${TEXT.filterStatusShipped}</option>
                             <option value="已完成">${TEXT.filterStatusCompleted}</option>
                         </select>
                     </div>
-                    <button class="filter-btn" id="applyBtn">${TEXT.filterApply}</button>
-                    <button class="filter-btn reset" id="resetBtn">${TEXT.filterReset}</button>
+                    <button class="btn btn-primary" id="applyBtn">${TEXT.filterApply}</button>
+                    <button class="btn btn-reset" id="resetBtn">${TEXT.filterReset}</button>
                 `;
+
+                const statusSelect = document.getElementById('statusSelect');
+                // 如果当前筛选状态不是'all'且存在该选项，则设置下拉框选中值
+                if (currentFilter.status !== 'all' && statusSelect) {
+                    const optionExists = Array.from(statusSelect.options).some(opt => opt.value === currentFilter.status);
+                    if (optionExists) {
+                        statusSelect.value = currentFilter.status;
+                    }
+                }
+
+                // 绑定应用筛选按钮
                 document.getElementById('applyBtn').onclick = () => {
                     currentFilter.dateRange = document.getElementById('dateSelect').value;
                     currentFilter.status = document.getElementById('statusSelect').value;
-                    refreshOrderLists();
+                    refreshOrderLists(); // 刷新订单列表
                 };
+                // 绑定重置筛选按钮
                 document.getElementById('resetBtn').onclick = () => {
                     document.getElementById('dateSelect').value = 'all';
                     document.getElementById('statusSelect').value = 'all';
@@ -1437,17 +1372,18 @@
                 };
             }
 
-            refreshOrderLists();
-            initOrderCardsToggle();
+            refreshOrderLists();           // 初次加载，刷新订单列表
+            initOrderCardsToggle();        // 初始化卡片折叠展开功能
 
             const activeCard = document.getElementById('cardActive');
             if (activeCard) {
-                activeCard.classList.add('expanded');
+                activeCard.classList.add('expanded');   // 默认展开实时订单卡片
                 activeCard.querySelector('.card-header').classList.add('active');
             }
         }
 
         function refreshOrderLists() {
+            // 根据筛选条件过滤订单，并重新渲染列表，更新计数
             const filteredActive = filterOrders(ACTIVE_ORDERS);
             const filteredCompleted = filterOrders(COMPLETED_ORDERS);
             const activeCountEl = document.getElementById('activeCount');
@@ -1457,6 +1393,7 @@
             renderOrderList('active', filteredActive);
             renderOrderList('completed', filteredCompleted);
             
+            // 如果之前选中的订单在当前筛选结果中已不存在，则清除详情区域
             if (selectedOrder) {
                 const exists = (selectedType === 'active' ? filteredActive : filteredCompleted).some(o => o.id === selectedOrder.id);
                 if (!exists) {
@@ -1468,6 +1405,7 @@
         }
 
         function renderOrderList(type, orders) {
+            // 渲染指定类型的订单列表（active 或 completed）
             const listEl = document.getElementById(type + 'List');
             if (!listEl) return;
             if (orders.length === 0) {
@@ -1480,19 +1418,20 @@
                 html += `<div class="order-item ${sel}" data-id="${o.id}" data-type="${type}">
                     <div class="order-row1">
                         <span class="order-id">${o.id}</span>
-                        <span class="order-gs1">${TEXT.gs1} ${o.gs1}</span>
+                        <span class="gs1-tag">${TEXT.gs1} ${o.gs1}</span>
                     </div>
                     <div class="order-row2">
                         <span class="order-amount">${o.amount}</span>
                         <span class="order-date">${o.date}</span>
-                        <span class="order-status ${type==='active'?'status-active':'status-completed'}">${o.status}</span>
+                        <span class="status-badge ${type==='active'?'status-active':'status-completed'}">${o.status}</span>
                     </div>
                 </div>`;
             });
             listEl.innerHTML = html;
+            // 为每个订单项绑定点击事件
             listEl.querySelectorAll('.order-item').forEach(el => {
                 el.onclick = (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation();   // 阻止事件冒泡，避免触发卡片折叠
                     const id = el.dataset.id;
                     const typ = el.dataset.type;
                     const ord = (typ === 'active' ? ACTIVE_ORDERS : COMPLETED_ORDERS).find(x => x.id === id);
@@ -1502,21 +1441,23 @@
         }
 
         function initOrderCardsToggle() {
+            // 为两个订单卡片（实时/已完成）头部绑定点击事件，实现折叠/展开
             const activeCard = document.getElementById('cardActive');
             const completedCard = document.getElementById('cardCompleted');
             if (!activeCard || !completedCard) return;
             [activeCard, completedCard].forEach(card => {
                 card.addEventListener('click', (e) => {
-                    if (e.target.closest('.card-header')) {
-                        selectedOrder = null;
+                    if (e.target.closest('.card-header')) {  // 只有点击头部区域才触发
+                        selectedOrder = null;                // 清空选中订单
                         selectedType = null;
-                        document.getElementById('ordersDetailContainer').innerHTML = '';
+                        document.getElementById('ordersDetailContainer').innerHTML = ''; // 清空详情
                         const isExpanded = card.classList.contains('expanded');
+                        // 收起两个卡片
                         activeCard.classList.remove('expanded');
                         completedCard.classList.remove('expanded');
                         activeCard.querySelector('.card-header').classList.remove('active');
                         completedCard.querySelector('.card-header').classList.remove('active');
-                        if (!isExpanded) {
+                        if (!isExpanded) {                  // 如果当前卡片是收起状态，则展开它
                             card.classList.add('expanded');
                             card.querySelector('.card-header').classList.add('active');
                         }
@@ -1526,6 +1467,7 @@
         }
 
         function selectOrderInOrders(order, type) {
+            // 选中某个订单，更新选中样式并渲染订单详情
             selectedOrder = order;
             selectedType = type;
             document.querySelectorAll('.order-item.selected').forEach(el => el.classList.remove('selected'));
@@ -1535,6 +1477,7 @@
         }
 
         function renderOrderDetail() {
+            // 根据当前选中的订单渲染详情卡片
             const container = document.getElementById('ordersDetailContainer');
             if (!container || !selectedOrder) return;
             const o = selectedOrder;
@@ -1542,11 +1485,12 @@
                 <div class="detail-header">
                     <div class="detail-title">
                         <span>${TEXT.orderDetailTitle} - <span style="color:var(--primary);">${o.id}</span></span>
-                        <span class="detail-gs1">${TEXT.gs1} ${o.gs1}</span>
+                        <span class="gs1-tag">${TEXT.gs1} ${o.gs1}</span>
                     </div>
                     <div style="font-size:0.8rem;color:var(--text-gray);">${TEXT.lastUpdate}: ${nowStr()}</div>
                 </div>`;
             if (selectedType === 'active') {
+                // 实时订单：显示选项卡（进度、物流、溯源）
                 html += `<div class="tabs" id="detailTabs">
                     <div class="tab active" data-tab="prog">${TEXT.progress}</div>
                     <div class="tab" data-tab="log">${TEXT.logistics}</div>
@@ -1556,6 +1500,7 @@
                 <div class="tab-content" id="tabLog">${buildLogistics(o.logistics)}</div>
                 <div class="tab-content" id="tabTrace">${buildTrace(o.trace)}</div>`;
             } else {
+                // 已完成订单：显示金额、日期、交付日期摘要及完整溯源
                 html += `<div class="summary-grid">
                     <div class="summary-item"><div class="summary-value">${o.amount}</div><div class="summary-label">${TEXT.amount}</div></div>
                     <div class="summary-item"><div class="summary-value">${o.date}</div><div class="summary-label">${TEXT.date}</div></div>
@@ -1567,6 +1512,7 @@
             html += '</div>';
             container.innerHTML = html;
 
+            // 如果为实时订单，为选项卡绑定点击切换事件
             if (selectedType === 'active') {
                 document.querySelectorAll('#detailTabs .tab').forEach(t => {
                     t.onclick = function() {
@@ -1579,25 +1525,26 @@
             }
         }
 
-        // 构建进度、物流、溯源HTML
+        // 构建进度跟踪HTML
         function buildProgress(prog) {
-            if (!prog || prog.length === 0) return '<div class="empty">暂无进度信息</div>';
+            if (!prog || prog.length === 0) return '<div class="empty">暫無進度資訊</div>';
             let s = '<div class="progress-track">';
             prog.forEach((p, i) => {
                 let cls = p.done ? 'step done' : (i === prog.findIndex(x => !x.done) ? 'step active' : 'step');
-                let icon = { 下单: 'fa-cart-shopping', 审核: 'fa-check', 付款: 'fa-credit-card', 排产: 'fa-calendar', 生产: 'fa-cogs', 质检: 'fa-clipboard', 发货: 'fa-truck' }[p.title] || 'fa-circle';
+                let icon = { 下單: 'fa-cart-shopping', 審核: 'fa-check', 付款: 'fa-credit-card', 排產: 'fa-calendar-alt', 生產: 'fa-cogs', 質檢: 'fa-clipboard-check', 發貨: 'fa-truck' }[p.title] || 'fa-circle';
                 s += `<div class="${cls}">
                     <div class="step-icon"><i class="fas ${icon}"></i></div>
                     <div class="step-label">${p.title}</div>
                     <div class="step-time">${p.time}</div>
-                    <div style="font-size:0.7rem;color:gray;">${p.desc}</div>
+                    <div style="font-size:0.7rem;color:var(--text-gray);">${p.desc}</div>
                 </div>`;
             });
             return s + '</div>';
         }
 
+        // 构建物流跟踪HTML
         function buildLogistics(logs) {
-            if (!logs || logs.length === 0) return '<div class="empty"><i class="fas fa-truck"></i><div>暂无物流信息</div></div>';
+            if (!logs || logs.length === 0) return '<div class="empty"><i class="fas fa-truck"></i><div>暫無物流資訊</div></div>';
             let s = '<div class="logistics-line">';
             logs.forEach((l, i) => {
                 let cls = l.done ? 'log-event done' : (i === logs.findIndex(x => !x.done) ? 'log-event active' : 'log-event');
@@ -1613,14 +1560,22 @@
             return s + '</div>';
         }
 
+        // 构建溯源信息HTML
         function buildTrace(traces) {
-            if (!traces || traces.length === 0) return '<div class="empty"><i class="fas fa-map-marked-alt"></i><div>暂无溯源信息</div></div>';
+            if (!traces || traces.length === 0) return '<div class="empty"><i class="fas fa-map-marked-alt"></i><div>暫無溯源資訊</div></div>';
             let s = '<ul class="trace-list">';
             traces.forEach(t => {
                 let cls = 'trace-item';
                 if (t.status === 'done') cls += ' done';
                 else if (t.status === 'active') cls += ' active';
-                let icon = { 种植: 'fa-seedling', 工厂: 'fa-industry', 印染: 'fa-palette', 质检: 'fa-clipboard-check', 物流: 'fa-truck', 仓库: 'fa-warehouse' }[t.loc.slice(0,2)] || 'fa-location-dot';
+                let icon = 'fa-location-dot';
+                if (t.loc.includes('棉田') || t.loc.includes('種植')) icon = 'fa-seedling';
+                else if (t.loc.includes('紡紗') || t.loc.includes('紡織')) icon = 'fa-industry';
+                else if (t.loc.includes('印染')) icon = 'fa-palette';
+                else if (t.loc.includes('成衣') || t.loc.includes('縫製') || t.loc.includes('製作') || t.loc.includes('服裝')) icon = 'fa-tshirt';
+                else if (t.loc.includes('質檢')) icon = 'fa-clipboard-check';
+                else if (t.loc.includes('物流') || t.loc.includes('運輸') || t.loc.includes('發貨') || t.loc.includes('攬收') || t.loc.includes('派送')) icon = 'fa-truck';
+                else if (t.loc.includes('倉庫') || t.loc.includes('門店') || t.loc.includes('簽收')) icon = 'fa-warehouse';
                 s += `<li class="${cls}">
                     <div class="trace-icon"><i class="fas ${icon}"></i></div>
                     <div>
@@ -1634,9 +1589,10 @@
         }
 
         // =========================================================================
-        // 七、导航切换绑定
+        // 八、導航切換綁定
         // =========================================================================
         function initNavigation() {
+            // 为所有导航卡片绑定点击事件，切换页面
             document.querySelectorAll('.nav-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     const page = card.dataset.page;
@@ -1646,20 +1602,20 @@
         }
 
         // =========================================================================
-        // 八、初始化入口
+        // 九、初始化入口
         // =========================================================================
         function init() {
-            initTheme();
-            initNavigation();
-            renderPage('home');
+            initTheme();           // 初始化主题（深色/浅色）
+            initNavigation();      // 初始化导航绑定
+            renderPage('home');    // 默认渲染主页
 
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
-                themeToggle.addEventListener('click', toggleTheme);
+                themeToggle.addEventListener('click', toggleTheme); // 绑定主题切换按钮
             }
         }
 
-        window.onload = init;
+        window.onload = init;      // 页面加载完成后执行初始化函数
     </script>
 </body>
 </html>

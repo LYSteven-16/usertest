@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <!-- 页面标题：纺织产业控制塔 · 统一供应链工作台（所有订单号以PO开头） -->
-    <title>紡織產業控制塔 · 統一供應鏈工作台</title>
+    <!-- 页面标题：纺织产业控制塔 · 供应链工作台 -->
+    <title>紡織產業控制塔 · 供應鏈工作台</title>
     <!-- ========== 第三方库样式 ========== -->
     <!-- Leaflet 地图 CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -183,7 +183,7 @@
 
         /* 风险 / KPI / 在途 / 质检 双栏布局 */
         .risk-kpi-row {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
         .risk-card, .kpi-card, .transit-card, .quality-card {
             background: var(--card-bg); border-radius: var(--radius); padding: 20px;
@@ -232,7 +232,7 @@
             display: flex; flex-direction: column; align-items: center; width: 18%;
         }
         .bar {
-            width: 100%; height: 80px; background: var(--gray-bg); border-radius: 8px 8px 0 0;
+            width: 100%; height: 150px; background: var(--gray-bg); border-radius: 8px 8px 0 0;
             position: relative; margin-bottom: 8px;
         }
         .bar-fill {
@@ -269,7 +269,7 @@
         }
         .bulletin-list {
             list-style: none; flex: 1;
-            max-height: 320px;
+            max-height: 380px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -548,7 +548,7 @@
                 <div class="avatar">紡</div>
                 <div class="user-info-wrapper">
                     <div class="user-name">供應鏈客戶</div>
-                    <div class="user-title">採購·物流整合</div>
+                    <div class="user-title">採購·物流·溯源一站式平台</div>
                 </div>
             </div>
             <!-- 导航菜单：data-page 属性标识页面，点击切换 -->
@@ -580,7 +580,7 @@
         const TEXT = {
             // ----- 公共文字 -----
             appName: "紡織產業控制塔",
-            appSub: "統一供應鏈協同平台",
+            appSub: "供應鏈協同平台",
             welcomeTitle: "下午好，供應鏈夥伴",
             welcomeDesc: "目前共有 2 筆訂單待確認，今日 1 筆貨物抵達，3 筆在途。",
             mapTitle: "全球訂單即時分佈",
